@@ -17,7 +17,7 @@ You can specify which weathers to rotate between inside of the configuration.
 From the main directory of your `Rebar` framework.
 
 ```
-git clone https://github.com/Stuyk/rebar-simple-weather src/plugins/simple-weather
+git clone https://github.com/Stuyk/simple-weather src/plugins/simple-weather
 ```
 
 That's it.
