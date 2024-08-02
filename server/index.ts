@@ -4,22 +4,23 @@ import { WeatherConfig } from './config.js';
 import { Weathers } from '@Shared/data/weathers.js';
 
 const Rebar = useRebar();
-const RebarEvents = Rebar.events.useEvents();
-const ServerWeather = Rebar.useServerWeather();
+const weatherService = Rebar.services.useWeatherService();
 
-const weathers = [...WeatherConfig.weathers];
+let weatherIndex = 0;
 
 function updatePlayerWeather(player: alt.Player, weatherType: Weathers) {
     Rebar.player.useWorld(player).setWeather(weatherType, WeatherConfig.timeToTransition);
 }
 
 function updateWeather() {
-    const oldWeather = weathers.shift();
-    weathers.push(oldWeather);
-    const newWeather = weathers[0];
+    weatherIndex += 1;
 
-    ServerWeather.setForecast(weathers);
-    ServerWeather.set(newWeather);
+    const weathers = weatherService.getWeatherForecast();
+    if (weatherIndex >= weathers.length) {
+        weatherIndex = 0;
+    }
+
+    weatherService.setWeather(weathers[weatherIndex]);
 }
 
 function handleWeatherChange(weather: Weathers) {
@@ -34,10 +35,11 @@ function handleWeatherChange(weather: Weathers) {
     alt.log(`Weather is now: ${weather}`);
 }
 
-function handleCharacterSelect(player: alt.Player) {
-    updatePlayerWeather(player, ServerWeather.get());
+function handleUpdateWeather(player: alt.Player) {
+    updatePlayerWeather(player, weatherService.getWeather());
 }
 
-RebarEvents.on('character-bound', handleCharacterSelect);
-RebarEvents.on('weather-changed', handleWeatherChange);
+weatherService.setWeatherForecast(WeatherConfig.weathers);
+alt.on('playerConnect', handleUpdateWeather);
+alt.on('rebar:weatherChanged', handleWeatherChange);
 alt.setInterval(updateWeather, WeatherConfig.timeBetweenUpdates);
